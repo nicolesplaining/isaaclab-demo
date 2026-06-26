@@ -14,9 +14,12 @@ bash ~/rl-demo/booth_start.sh           # one fresh run, prints the two URLs
 # or, unattended cycling every 4 min:
 bash ~/rl-demo/booth_loop.sh 240
 ```
-Then open in a browser (booth machine or over Tailscale @ 100.97.64.41):
-- **Live 3D viewer (viser):** http://<spark-ip>:8080
-- **Reward / loss curves (TensorBoard):** http://<spark-ip>:6006
+Then open the SINGLE client-facing page (booth machine or over Tailscale @ 100.97.64.41):
+- **Booth dashboard:** http://<spark-ip>:8800/   <-- the one URL to show visitors
+
+The dashboard embeds the live 3D robot view (viser) and renders clean live charts:
+reward (up), episode length (up), velocity tracking error (down), plus iteration/steps-per-sec.
+Engineer views remain available: viser http://<spark-ip>:8080 , TensorBoard http://<spark-ip>:6006 .
 
 To restart for the next visitor, just re-run `booth_start.sh` (it kills the prior run
 and starts fresh from iteration 0 — robot flails again, then learns).
