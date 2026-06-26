@@ -199,14 +199,10 @@ PAGE = r"""<!doctype html>
 
   <main>
     <div class="stage">
-      <div class="tag" id="stagetag">live physics · 2048 robots</div>
+      <div class="tag" id="stagetag">live physics · one robot learning to walk</div>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
-      <div class="pip">
-        <div class="plabel"><span class="d"></span>SPOTLIGHT · watch one robot learn</div>
-        <iframe id="viserpip" referrerpolicy="no-referrer"></iframe>
-      </div>
     </div>
 
     <div class="right">
@@ -243,11 +239,9 @@ PAGE = r"""<!doctype html>
 const host = location.hostname || "localhost";
 const viser = document.getElementById("viser");
 let viserUp = false;
-const viserpip = document.getElementById("viserpip");
 function tryViser(){
-  // viser serves on :8080; point both the main view and the zoomed spotlight at it
+  // viser serves on :8080; point the iframe at the same host the page was opened from
   viser.src = "http://"+host+":8080/";
-  viserpip.src = "http://"+host+":8080/";
 }
 tryViser();
 
@@ -309,8 +303,8 @@ async function tick(){
   document.getElementById("maxiter").textContent = m.max_iter;
   document.getElementById("elapsed").textContent = fmtTime(m.elapsed);
   document.getElementById("sps").textContent = (m.sps||0).toLocaleString();
-  if(m.envs){ document.getElementById("stagetag").textContent = "live physics · "+m.envs.toLocaleString()+" robots";
-              document.getElementById("s_eplen"); }
+  if(m.envs){ document.getElementById("stagetag").textContent =
+     "live physics · 1 robot shown · learning from "+m.envs.toLocaleString()+" in parallel"; }
   if(m.task){ document.getElementById("task").textContent =
      "Isaac Lab · rsl_rl PPO · "+m.task; }
 

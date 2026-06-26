@@ -1,21 +1,18 @@
 #!/usr/bin/env bash
-# Booth one-shot: start the full single-page demo from scratch.
+# Booth one-shot: start the full single-page demo from scratch (ONE robot).
 #   - dashboard web page  (port 8800)  <-- the client-facing URL
 #   - viser 3D viewer      (port 8080)  embedded inside the dashboard
 #   - TensorBoard          (port 6006)  optional, for engineers
-# Re-run to restart fresh (robot flails -> walks again).
-# Usage: ./booth_start.sh [TASK] [ITERS] [ENVS]
+# Training is launched via a self-healing watchdog (auto-retries the intermittent
+# Isaac Sim boot-hang). Re-run to restart fresh (robot flails -> walks again).
+# Usage: ./booth_start.sh [TASK] [ITERS] [ENVS] [VISIBLE_ROBOTS]
 set -u
 TASK="${1:-Isaac-Velocity-Flat-Unitree-Go2-v0}"
 ITERS="${2:-200}"
 ENVS="${3:-2048}"
+VIS="${4:-1}"        # robots rendered (1 = single hero robot); training still uses ENVS
 DASH_PORT=8800
 cd ~/rl-demo
-
-start_bg () {  # start_bg <pattern-to-check> <command...>
-  setsid bash -c "$1" </dev/null >>"$2" 2>&1 &
-  disown
-}
 
 # 1) Dashboard web server (single client-facing page)
 if ! ss -tln 2>/dev/null | grep -q ":${DASH_PORT}\b"; then
@@ -30,17 +27,17 @@ if ! ss -tln 2>/dev/null | grep -q ":6006\b"; then
   sleep 4
 fi
 
-# 3) Fresh training run WITH live viser viewer (launcher kills any prior train.py)
-setsid bash ~/rl-demo/run_train_viz.sh "$TASK" "$ITERS" "$ENVS" "${4:-32}" </dev/null >/dev/null 2>&1 & disown
+# 3) Fresh training run via self-healing watchdog (kills any prior run, retries hangs)
+setsid bash ~/rl-demo/train_watchdog.sh "$TASK" "$ITERS" "$ENVS" "$VIS" </dev/null >/tmp/watchdog.out 2>&1 & disown
 
 IPS=$(hostname -I)
 echo "=================================================="
-echo " BOOTH DEMO STARTED: $TASK ($ENVS envs, $ITERS iters)"
+echo " BOOTH DEMO STARTING: $TASK  (1 robot shown, training on $ENVS)"
 echo ""
 echo "  >>> OPEN THIS ONE PAGE (booth display / any tailnet browser): <<<"
 for ip in $IPS localhost; do echo "        http://$ip:${DASH_PORT}/"; done
 echo "  (Spark Tailscale IP is typically 100.97.64.41 -> http://100.97.64.41:${DASH_PORT}/)"
 echo ""
-echo "  It embeds the live 3D robot view + reward/length/error curves."
-echo "  ~3 minutes: robot flails -> walks. Re-run this script to restart."
+echo "  Boots in ~1 min (watchdog auto-retries hangs), then ~3 min flail -> walk."
+echo "  Re-run this script to restart for the next visitor."
 echo "=================================================="
