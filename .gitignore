@@ -1,0 +1,12 @@
+# external upstream repos (huge, their own git history)
+IsaacSim/
+IsaacLab/
+dgx-spark-playbooks/
+# logs & artifacts
+*.log
+logs/
+auto-claude-logs/
+outputs/
+runs/
+__pycache__/
+*.pyc
