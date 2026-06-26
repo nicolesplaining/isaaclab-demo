@@ -15,5 +15,5 @@ LOG=~/rl-demo/train_viz.log
 rm -f "$LOG" /tmp/trainviz.done
 echo "[launcher] $TASK iters=$ITERS envs=$ENVS visible=$VIS viz=viser at $(date)" > "$LOG"
 ./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py \
-    --task=$TASK --viz viser --num_envs $ENVS --max_visible_envs $VIS --max_iterations $ITERS >> "$LOG" 2>&1
+    --task=$TASK --viz viser --num_envs $ENVS --max_visible_envs $VIS --max_iterations $ITERS env.scene.env_spacing=0.0 >> "$LOG" 2>&1
 echo "DONE exit=$? at $(date)" >> "$LOG"; echo DONE > /tmp/trainviz.done
