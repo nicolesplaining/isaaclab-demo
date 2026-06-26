@@ -31,7 +31,7 @@ if ! ss -tln 2>/dev/null | grep -q ":6006\b"; then
 fi
 
 # 3) Fresh training run WITH live viser viewer (launcher kills any prior train.py)
-setsid bash ~/rl-demo/run_train_viz.sh "$TASK" "$ITERS" "$ENVS" </dev/null >/dev/null 2>&1 & disown
+setsid bash ~/rl-demo/run_train_viz.sh "$TASK" "$ITERS" "$ENVS" "${4:-32}" </dev/null >/dev/null 2>&1 & disown
 
 IPS=$(hostname -I)
 echo "=================================================="

@@ -167,6 +167,17 @@ PAGE = r"""<!doctype html>
   footer{padding:8px 26px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;
     display:flex;justify-content:space-between}
   .up{color:var(--green2)} .down{color:var(--cyan)}
+  /* picture-in-picture spotlight: zoomed view of the centre robot(s) */
+  .pip{position:absolute;right:14px;bottom:14px;width:30%;height:36%;border:2px solid var(--green);
+    border-radius:10px;overflow:hidden;background:#000;z-index:6;
+    box-shadow:0 0 24px rgba(118,185,0,.45),0 8px 22px rgba(0,0,0,.65)}
+  .pip .plabel{position:absolute;top:0;left:0;right:0;z-index:7;padding:6px 9px;display:flex;
+    align-items:center;gap:7px;color:var(--green2);font-size:12px;font-weight:700;letter-spacing:.4px;
+    background:linear-gradient(180deg,rgba(0,0,0,.8),rgba(0,0,0,0))}
+  .pip .plabel .d{width:8px;height:8px;border-radius:50%;background:var(--green2);
+    box-shadow:0 0 9px var(--green2);animation:b 1.1s infinite}
+  .pip iframe{position:absolute;top:50%;left:50%;width:270%;height:270%;
+    transform:translate(-50%,-50%);border:0;pointer-events:none}
 </style></head>
 <body><div id="app">
   <header>
@@ -192,6 +203,10 @@ PAGE = r"""<!doctype html>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
+      <div class="pip">
+        <div class="plabel"><span class="d"></span>SPOTLIGHT · watch one robot learn</div>
+        <iframe id="viserpip" referrerpolicy="no-referrer"></iframe>
+      </div>
     </div>
 
     <div class="right">
@@ -228,9 +243,11 @@ PAGE = r"""<!doctype html>
 const host = location.hostname || "localhost";
 const viser = document.getElementById("viser");
 let viserUp = false;
+const viserpip = document.getElementById("viserpip");
 function tryViser(){
-  // viser serves on :8080; point the iframe at the same host the page was opened from
+  // viser serves on :8080; point both the main view and the zoomed spotlight at it
   viser.src = "http://"+host+":8080/";
+  viserpip.src = "http://"+host+":8080/";
 }
 tryViser();
 
