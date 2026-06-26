@@ -2,7 +2,7 @@
 # RL training WITH live viser web viewer (port 8080). Args: TASK MAX_ITERS NUM_ENVS
 TASK="${1:-Isaac-Velocity-Flat-Unitree-Go2-v0}"
 ITERS="${2:-300}"
-ENVS="${3:-64}"
+ENVS="${3:-2048}"
 cd ~/rl-demo/IsaacLab
 export TERM=xterm
 export LD_PRELOAD="$LD_PRELOAD:/lib/aarch64-linux-gnu/libgomp.so.1"
