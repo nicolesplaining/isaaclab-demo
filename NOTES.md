@@ -26,3 +26,16 @@ from scratch in ~3 minutes on the Spark, with live reward curves.
 
 ## Run headless training
     bash ~/rl-demo/run_train.sh Isaac-Velocity-Flat-Unitree-Go2-v0 150
+
+## Update: bipedal G1 + hang fix + follow camera (2026-06-26)
+- Demo task is now `Isaac-Velocity-Flat-G1-v0` (bipedal). Trains to walk (reward dips
+  negative early as episodes lengthen, then climbs to ~+9 by iter ~390).
+- **Boot-hang ROOT CAUSE:** carb spawns one worker thread per core (20 on GB10), and
+  carb.dictionary plugin pre-startup intermittently deadlocks on a futex (~1/3 boots).
+  Confirmed via gdb (main thread stuck in carbOnPluginPreStartup futex wait).
+  **FIX:** cap carb threads to 6 via `--kit_args=--/plugins/carb.tasking.plugin/threadCount=6`
+  plus env PXR_WORK_THREAD_LIMIT/OMP_NUM_THREADS=6 (in run_train_viz.sh). Note: must use
+  `--kit_args=` (equals form) or argparse treats the `--/...` value as a flag.
+- **Follow camera:** patch_follow_camera.py patches the viser viewer to keep the tracked
+  robot centered (apply to IsaacLab/source/isaaclab_visualizers/.../viser/viser_visualizer.py).
+- **Self-healing:** train_watchdog.sh retries the boot-hang; run_demo.sh / booth_start.sh use it.

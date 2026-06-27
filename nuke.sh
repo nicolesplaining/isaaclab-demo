@@ -6,6 +6,7 @@ for i in $(seq 1 30); do
   pkill -9 -f booth_restart.sh 2>/dev/null
   pkill -9 -f booth_start.sh 2>/dev/null
   pkill -9 -f booth_loop.sh 2>/dev/null
+  pkill -9 -f train_watchdog.sh 2>/dev/null
   pkill -9 -f run_train_viz.sh 2>/dev/null
   pkill -9 -f run_train.sh 2>/dev/null
   pkill -9 -f run_tensorboard.sh 2>/dev/null

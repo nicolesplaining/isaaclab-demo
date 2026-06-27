@@ -14,6 +14,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 HOME = os.path.expanduser("~")
 DEFAULT_LOG = os.path.join(HOME, "rl-demo", "train_viz.log")
+START_EPOCH_FILE = os.path.join(HOME, "rl-demo", "train_start.epoch")
 DONE_FLAG = "/tmp/trainviz.done"
 
 FIELDS = {
@@ -57,8 +58,22 @@ def parse_log(path):
 
     max_iter = int(iters[-1][1]) if iters else 0
     cur_iter = int(iters[-1][0]) if iters else 0
-    elapsed = round(sum(ittimes), 1)
     cur_sps = int(sps_all[-1]) if sps_all else 0
+
+    # elapsed = smooth wall-clock since the run launched (start epoch written by
+    # run_train_viz.sh). Falls back to summed iteration time if the file is missing.
+    log_fresh0 = os.path.exists(path) and (time.time() - os.path.getmtime(path) < 20)
+    elapsed = round(sum(ittimes), 1)
+    try:
+        with open(START_EPOCH_FILE) as f:
+            ep = float(f.read().strip())
+        live = time.time() - ep
+        if log_fresh0:
+            elapsed = round(max(0.0, live), 1)          # ticking while training
+        else:
+            elapsed = round(max(elapsed, 0.0), 1)        # frozen after run ends
+    except Exception:
+        pass
 
     # task / env count from the launcher header line
     task, envs = "", 0
@@ -203,6 +218,10 @@ PAGE = r"""<!doctype html>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
+      <div class="pip">
+        <div class="plabel"><span class="d"></span>SPOTLIGHT · tracking one robot</div>
+        <iframe id="viserpip" referrerpolicy="no-referrer"></iframe>
+      </div>
     </div>
 
     <div class="right">
@@ -239,9 +258,13 @@ PAGE = r"""<!doctype html>
 const host = location.hostname || "localhost";
 const viser = document.getElementById("viser");
 let viserUp = false;
+const viserpip = document.getElementById("viserpip");
 function tryViser(){
-  // viser serves on :8080; point the iframe at the same host the page was opened from
+  // viser serves on :8080; main view + zoomed spotlight both point at it.
+  // The follow-camera keeps the tracked robot centered, so the centre-zoomed
+  // spotlight automatically stays locked on it.
   viser.src = "http://"+host+":8080/";
+  viserpip.src = "http://"+host+":8080/";
 }
 tryViser();
 
@@ -304,7 +327,7 @@ async function tick(){
   document.getElementById("elapsed").textContent = fmtTime(m.elapsed);
   document.getElementById("sps").textContent = (m.sps||0).toLocaleString();
   if(m.envs){ document.getElementById("stagetag").textContent =
-     "live physics · 1 robot shown · learning from "+m.envs.toLocaleString()+" in parallel"; }
+     "live physics · learning from "+m.envs.toLocaleString()+" robots in parallel"; }
   if(m.task){ document.getElementById("task").textContent =
      "Isaac Lab · rsl_rl PPO · "+m.task; }
 
