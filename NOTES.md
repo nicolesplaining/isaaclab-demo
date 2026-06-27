@@ -39,3 +39,15 @@ from scratch in ~3 minutes on the Spark, with live reward curves.
 - **Follow camera:** patch_follow_camera.py patches the viser viewer to keep the tracked
   robot centered (apply to IsaacLab/source/isaaclab_visualizers/.../viser/viser_visualizer.py).
 - **Self-healing:** train_watchdog.sh retries the boot-hang; run_demo.sh / booth_start.sh use it.
+
+## Booth flow: warm-started 4-min G1 demo (2026-06-26)
+- `booth_g1.sh booth_seed model_100.pt 140 2048 9` is the booth launcher: resumes G1
+  from checkpoint model_100 (clumsy), trains ~140 iters (~4 min) LIVE to a confident
+  walk, with a 9-robot crowd + tracking spotlight, then LOOPS for each visitor.
+  Self-heals the Isaac boot-hang; keeps dashboard:8800 + tensorboard:6006 up.
+- Seed checkpoint copied to logs/rsl_rl/g1_flat/booth_seed/ (stable; from the +9 run).
+- `run_resume.sh TASK LOAD_RUN CKPT EXTRA_ITERS ENVS VIS` does the actual --resume launch.
+- To change the "before": pick a different model_NNN.pt (lower = more dramatic/rougher,
+  higher = cleaner but less change). To change duration: change EXTRA_ITERS (~35 iters/min).
+- Note: warm-start framing = "watch it refine its gait live", not "from scratch". First
+  ~40 logged iters include a metric-warmup ramp (robot already at checkpoint level visually).
