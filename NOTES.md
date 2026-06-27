@@ -51,3 +51,14 @@ from scratch in ~3 minutes on the Spark, with live reward curves.
   higher = cleaner but less change). To change duration: change EXTRA_ITERS (~35 iters/min).
 - Note: warm-start framing = "watch it refine its gait live", not "from scratch". First
   ~40 logged iters include a metric-warmup ramp (robot already at checkpoint level visually).
+
+## Instant in-place reset (2026-06-26)
+- `booth_instant.sh booth_seed model_100.pt 2048 16` runs ONE long-lived G1 training
+  (resume model_100, max_iterations huge). The dashboard "Restart" button hits
+  /api/restart which touches /tmp/demo_reset.
+- patch_reset_hook.py injects a hook into rsl_rl OnPolicyRunner.learn(): on the flag it
+  reloads booth_seed/model_100.pt + resets the robots IN-PLACE (no Isaac Sim reboot) and
+  prints DEMO_RESET_MARKER. Reset is ~instant (a few sec) vs ~90s for a sim reboot.
+- Dashboard parses metrics only since the last DEMO_RESET_MARKER and shows iteration
+  relative to the reset (capped at CYCLE_TARGET=140). Re-apply hook after IsaacLab updates.
+- booth_g1.sh (reboot-per-reset, ~90s) is kept as the simpler fallback.

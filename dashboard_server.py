@@ -16,6 +16,7 @@ HOME = os.path.expanduser("~")
 DEFAULT_LOG = os.path.join(HOME, "rl-demo", "train_viz.log")
 START_EPOCH_FILE = os.path.join(HOME, "rl-demo", "train_start.epoch")
 DONE_FLAG = "/tmp/trainviz.done"
+CYCLE_TARGET = 140   # iterations per booth arc (display only)
 
 FIELDS = {
     "iter":    re.compile(r"Learning iteration (\d+)/(\d+)"),
@@ -33,6 +34,10 @@ def parse_log(path):
     try:
         with open(path, "r", errors="ignore") as f:
             text = ANSI.sub("", f.read())
+        # instant-reset: only show metrics since the most recent reset marker
+        _m = text.rfind("DEMO_RESET_MARKER")
+        if _m != -1:
+            text = text[_m:]
     except FileNotFoundError:
         return {"meta": {"status": "waiting", "current_iter": 0, "max_iter": 0,
                          "elapsed": 0, "sps": 0, "task": "", "envs": 0}, "series": []}
@@ -56,8 +61,9 @@ def parse_log(path):
             "success": round(succ[i], 3) if i < len(succ) else None,
         })
 
-    max_iter = int(iters[-1][1]) if iters else 0
-    cur_iter = int(iters[-1][0]) if iters else 0
+    # iterations counted within the current arc (since last reset / start)
+    cur_iter = min(len(series), CYCLE_TARGET)
+    max_iter = CYCLE_TARGET
     cur_sps = int(sps_all[-1]) if sps_all else 0
 
     # elapsed = smooth wall-clock since the run launched (start epoch written by
@@ -116,10 +122,10 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/api/metrics"):
             self._send(200, json.dumps(parse_log(self.log_path)))
         elif self.path.startswith("/api/restart"):
-            # kill the current training run; the booth_g1 loop then starts a fresh
-            # cycle from the checkpoint automatically.
+            # instant in-place reset: the training loop's hook reloads the seed
+            # checkpoint + resets the robots on this flag (no simulator reboot).
             try:
-                subprocess.Popen(["pkill", "-9", "-f", "rsl_rl/train.py"])
+                open("/tmp/demo_reset", "w").close()
             except Exception:
                 pass
             self._send(200, json.dumps({"ok": True}))
@@ -373,11 +379,9 @@ async function tick(){
 // starts a fresh cycle from the checkpoint (~90s to reboot the simulator).
 const rbtn = document.getElementById("restartBtn");
 rbtn.addEventListener("click", async () => {
-  rbtn.disabled = true; const orig = rbtn.textContent; rbtn.textContent = "⟳ Restarting…";
+  rbtn.disabled = true; const orig = rbtn.textContent; rbtn.textContent = "⟳ Reset!";
   try { await fetch("/api/restart"); } catch(e){}
-  document.getElementById("status").textContent = "restarting";
-  document.getElementById("stageover").style.display = "flex";
-  setTimeout(() => { rbtn.disabled = false; rbtn.textContent = orig; }, 8000);
+  setTimeout(() => { rbtn.disabled = false; rbtn.textContent = orig; }, 2500);
 });
 setInterval(tick, 1500); tick();
 window.addEventListener("resize", tick);
