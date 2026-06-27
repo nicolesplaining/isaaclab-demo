@@ -8,7 +8,7 @@ rsl_rl training log. No external/CDN dependencies (works offline at a booth).
 Run:  python3 dashboard_server.py [--port 8000] [--log ~/rl-demo/train_viz.log]
 Then open http://<spark-ip>:<port>/
 """
-import argparse, json, os, re, time
+import argparse, json, os, re, subprocess, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
@@ -115,6 +115,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/api/metrics"):
             self._send(200, json.dumps(parse_log(self.log_path)))
+        elif self.path.startswith("/api/restart"):
+            # kill the current training run; the booth_g1 loop then starts a fresh
+            # cycle from the checkpoint automatically.
+            try:
+                subprocess.Popen(["pkill", "-9", "-f", "rsl_rl/train.py"])
+            except Exception:
+                pass
+            self._send(200, json.dumps({"ok": True}))
         elif self.path == "/" or self.path.startswith("/index"):
             self._send(200, PAGE, "text/html; charset=utf-8")
         else:
@@ -153,6 +161,12 @@ PAGE = r"""<!doctype html>
   @keyframes b{0%,100%{opacity:1}50%{opacity:.25}}
   .clock{color:var(--dim);font-size:13px;text-align:right}
   .clock b{color:var(--txt);font-size:15px}
+  .restart{cursor:pointer;background:#1a2410;border:1px solid #3a5018;color:var(--green2);
+    font-weight:700;font-size:13px;letter-spacing:.5px;padding:9px 16px;border-radius:9px;
+    transition:background .15s, transform .05s}
+  .restart:hover{background:#24330f}
+  .restart:active{transform:scale(.96)}
+  .restart:disabled{opacity:.5;cursor:default}
   main{flex:1;display:grid;grid-template-columns:1.35fr 1fr;gap:14px;padding:14px;min-height:0}
   .stage{position:relative;background:#000;border:1px solid var(--line);border-radius:12px;
     overflow:hidden}
@@ -207,8 +221,9 @@ PAGE = r"""<!doctype html>
       <div class="pill"><span class="blink"></span><span id="status">warming up</span></div>
       <div class="clock">
         <div>iteration <b id="iter">0</b> / <span id="maxiter">0</span></div>
-        <div>elapsed <b id="elapsed">0s</b> · <span id="sps">0</span> steps/s</div>
+        <div><span id="sps">0</span> steps/s</div>
       </div>
+      <button id="restartBtn" class="restart">⟳ Restart demo</button>
     </div>
   </header>
 
@@ -324,7 +339,6 @@ async function tick(){
      m.status==="training"?"training live": m.status;
   document.getElementById("iter").textContent = m.current_iter;
   document.getElementById("maxiter").textContent = m.max_iter;
-  document.getElementById("elapsed").textContent = fmtTime(m.elapsed);
   document.getElementById("sps").textContent = (m.sps||0).toLocaleString();
   if(m.envs){ document.getElementById("stagetag").textContent =
      "live physics · learning from "+m.envs.toLocaleString()+" robots in parallel"; }
@@ -355,6 +369,16 @@ async function tick(){
   drawChart(document.getElementById("ch_velerr"), velerr,
      {color:"#00d0ff", fill:"rgba(0,208,255,.20)", lo:0, dec:2});
 }
+// restart button: tells the server to kill the current run; the booth loop then
+// starts a fresh cycle from the checkpoint (~90s to reboot the simulator).
+const rbtn = document.getElementById("restartBtn");
+rbtn.addEventListener("click", async () => {
+  rbtn.disabled = true; const orig = rbtn.textContent; rbtn.textContent = "⟳ Restarting…";
+  try { await fetch("/api/restart"); } catch(e){}
+  document.getElementById("status").textContent = "restarting";
+  document.getElementById("stageover").style.display = "flex";
+  setTimeout(() => { rbtn.disabled = false; rbtn.textContent = orig; }, 8000);
+});
 setInterval(tick, 1500); tick();
 window.addEventListener("resize", tick);
 </script>
