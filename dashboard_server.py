@@ -144,73 +144,63 @@ PAGE = r"""<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>DGX Spark — Live Reinforcement Learning</title>
 <style>
-  :root{ --bg:#0a0e0a; --panel:#11171a; --line:#1f2a2a; --green:#76b900; --green2:#a4e400;
-         --cyan:#00d0ff; --amber:#ffb000; --txt:#e8f0e8; --dim:#7f8c87; }
+  :root{ --bg:#08090b; --line:#181b20; --line2:#262a31; --txt:#edeff2; --dim:#767d87;
+         --dim2:#474d56; --acc:#8ad94c; --cyan:#5ec9e8; }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{height:100%;background:var(--bg);color:var(--txt);
-    font-family:'Segoe UI',Helvetica,Arial,sans-serif;overflow:hidden}
+    font-family:-apple-system,'Inter','SF Pro Display',system-ui,'Segoe UI',sans-serif;
+    overflow:hidden;-webkit-font-smoothing:antialiased;font-feature-settings:'tnum' 1}
   #app{height:100vh;display:flex;flex-direction:column}
-  header{display:flex;align-items:center;justify-content:space-between;
-    padding:14px 26px;border-bottom:1px solid var(--line);
-    background:linear-gradient(90deg,#0d120d, #0a0e0a)}
-  .brand{display:flex;align-items:center;gap:14px}
-  .brand .dot{width:12px;height:12px;border-radius:50%;background:var(--green);
-    box-shadow:0 0 14px var(--green)}
-  .brand h1{font-size:20px;font-weight:600;letter-spacing:.3px}
-  .brand .sub{color:var(--dim);font-size:13px;margin-top:2px}
-  .live{display:flex;align-items:center;gap:18px}
-  .pill{display:flex;align-items:center;gap:8px;background:#1a2410;border:1px solid #2f3f18;
-    color:var(--green2);padding:7px 14px;border-radius:999px;font-weight:700;font-size:13px;
-    letter-spacing:1px;text-transform:uppercase}
-  .pill .blink{width:9px;height:9px;border-radius:50%;background:var(--green2);
-    animation:b 1.1s infinite}
-  @keyframes b{0%,100%{opacity:1}50%{opacity:.25}}
-  .clock{color:var(--dim);font-size:13px;text-align:right}
-  .clock b{color:var(--txt);font-size:15px}
-  .restart{cursor:pointer;background:#1a2410;border:1px solid #3a5018;color:var(--green2);
-    font-weight:700;font-size:13px;letter-spacing:.5px;padding:9px 16px;border-radius:9px;
-    transition:background .15s, transform .05s}
-  .restart:hover{background:#24330f}
-  .restart:active{transform:scale(.96)}
-  .restart:disabled{opacity:.5;cursor:default}
-  main{flex:1;display:grid;grid-template-columns:1.35fr 1fr;gap:14px;padding:14px;min-height:0}
-  .stage{position:relative;background:#000;border:1px solid var(--line);border-radius:12px;
-    overflow:hidden}
+  header{display:flex;align-items:center;justify-content:space-between;padding:22px 32px 18px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--acc)}
+  .brand h1{font-size:15px;font-weight:600;letter-spacing:-.1px}
+  .brand .sub{color:var(--dim);font-size:12px;margin-top:3px;font-weight:400;letter-spacing:.2px}
+  .live{display:flex;align-items:center;gap:28px}
+  .pill{display:flex;align-items:center;gap:8px;color:var(--acc);
+    font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase}
+  .pill .blink{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:b 1.4s infinite}
+  @keyframes b{0%,100%{opacity:1}50%{opacity:.28}}
+  .clock{color:var(--dim);font-size:12px;text-align:right;line-height:1.55;letter-spacing:.2px}
+  .clock b{color:var(--txt);font-weight:600}
+  .restart{cursor:pointer;background:transparent;border:1px solid var(--line2);color:var(--txt);
+    font-weight:500;font-size:12px;letter-spacing:.2px;padding:8px 15px;border-radius:8px;
+    transition:border-color .15s,color .15s,transform .05s}
+  .restart:hover{border-color:var(--acc);color:var(--acc)}
+  .restart:active{transform:scale(.97)}
+  .restart:disabled{opacity:.45;cursor:default}
+  main{flex:1;display:grid;grid-template-columns:1.5fr 1fr;gap:20px;padding:0 32px 20px;min-height:0}
+  .stage{position:relative;background:#000;border:1px solid var(--line);border-radius:16px;overflow:hidden}
   .stage iframe{width:100%;height:100%;border:0;display:block}
-  .stage .tag{position:absolute;top:12px;left:14px;z-index:5;background:rgba(0,0,0,.55);
-    backdrop-filter:blur(4px);padding:6px 12px;border-radius:8px;font-size:13px;color:#cfe8b0;
-    border:1px solid #2a3a18}
+  .stage .tag{position:absolute;top:16px;left:18px;z-index:5;font-size:10.5px;letter-spacing:.8px;
+    color:var(--dim);text-transform:uppercase;font-weight:500}
   .stage .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    flex-direction:column;gap:14px;background:radial-gradient(circle at 50% 40%,#0c140c,#000);
-    color:var(--dim);font-size:15px;z-index:4}
-  .spin{width:38px;height:38px;border:3px solid #243018;border-top-color:var(--green);
-    border-radius:50%;animation:s 1s linear infinite}
+    flex-direction:column;gap:16px;background:#08090b;color:var(--dim);font-size:13px;z-index:4}
+  .spin{width:30px;height:30px;border:2px solid var(--line2);border-top-color:var(--acc);
+    border-radius:50%;animation:s .9s linear infinite}
   @keyframes s{to{transform:rotate(360deg)}}
-  .right{display:grid;grid-template-rows:auto 1fr 1fr 1fr;gap:12px;min-height:0}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-  .stat .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:1px}
-  .stat .v{font-size:26px;font-weight:700;margin-top:3px}
-  .stat .v small{font-size:13px;color:var(--dim);font-weight:500}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    padding:10px 12px;display:flex;flex-direction:column;min-height:0}
-  .card .h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
-  .card .h .t{font-size:13px;font-weight:600}
-  .card .h .t .arrow{font-size:12px;margin-left:6px}
-  .card .h .cur{font-size:20px;font-weight:700}
+  .right{display:grid;grid-template-rows:auto 1fr 1fr 1fr;gap:16px;min-height:0}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .stat{background:var(--bg);padding:15px 18px}
+  .stat .k{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;font-weight:500}
+  .stat .v{font-size:29px;font-weight:600;margin-top:7px;letter-spacing:-1px}
+  .stat .v small{font-size:13px;color:var(--dim2);font-weight:500;letter-spacing:0}
+  .card{display:flex;flex-direction:column;min-height:0}
+  .card .h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:3px}
+  .card .h .t{font-size:10.5px;font-weight:500;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  .card .h .t .arrow{font-size:9.5px;margin-left:8px;color:var(--dim2);letter-spacing:.2px}
+  .card .h .cur{font-size:21px;font-weight:600;letter-spacing:-.5px}
   .card canvas{flex:1;width:100%;min-height:0}
-  footer{padding:8px 26px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;
-    display:flex;justify-content:space-between}
-  .up{color:var(--green2)} .down{color:var(--cyan)}
-  /* picture-in-picture spotlight: zoomed view of the centre robot(s) */
-  .pip{position:absolute;right:14px;bottom:14px;width:30%;height:36%;border:2px solid var(--green);
-    border-radius:10px;overflow:hidden;background:#000;z-index:6;
-    box-shadow:0 0 24px rgba(118,185,0,.45),0 8px 22px rgba(0,0,0,.65)}
-  .pip .plabel{position:absolute;top:0;left:0;right:0;z-index:7;padding:6px 9px;display:flex;
-    align-items:center;gap:7px;color:var(--green2);font-size:12px;font-weight:700;letter-spacing:.4px;
-    background:linear-gradient(180deg,rgba(0,0,0,.8),rgba(0,0,0,0))}
-  .pip .plabel .d{width:8px;height:8px;border-radius:50%;background:var(--green2);
-    box-shadow:0 0 9px var(--green2);animation:b 1.1s infinite}
+  footer{padding:14px 32px;border-top:1px solid var(--line);color:var(--dim2);font-size:11px;
+    letter-spacing:.2px;display:flex;justify-content:space-between}
+  .up{color:var(--acc)} .down{color:var(--cyan)}
+  /* spotlight inset */
+  .pip{position:absolute;right:16px;bottom:16px;width:31%;height:38%;border:1px solid var(--line2);
+    border-radius:12px;overflow:hidden;background:#000;z-index:6;box-shadow:0 12px 34px rgba(0,0,0,.55)}
+  .pip .plabel{position:absolute;top:11px;left:13px;z-index:7;display:flex;align-items:center;gap:6px;
+    color:var(--dim);font-size:9.5px;font-weight:500;letter-spacing:.8px;text-transform:uppercase}
+  .pip .plabel .d{width:5px;height:5px;border-radius:50%;background:var(--acc);animation:b 1.4s infinite}
   .pip iframe{position:absolute;top:50%;left:50%;width:270%;height:270%;
     transform:translate(-50%,-50%);border:0;pointer-events:none}
 </style></head>
@@ -219,8 +209,8 @@ PAGE = r"""<!doctype html>
     <div class="brand">
       <div class="dot"></div>
       <div>
-        <h1>A robot learns to walk — live on NVIDIA DGX Spark</h1>
-        <div class="sub" id="subtitle">Reinforcement learning from scratch · on-device · GB10 Blackwell</div>
+        <h1>Learning to walk</h1>
+        <div class="sub" id="subtitle">Live reinforcement learning · NVIDIA DGX Spark</div>
       </div>
     </div>
     <div class="live">
@@ -229,18 +219,18 @@ PAGE = r"""<!doctype html>
         <div>iteration <b id="iter">0</b> / <span id="maxiter">0</span></div>
         <div><span id="sps">0</span> steps/s</div>
       </div>
-      <button id="restartBtn" class="restart">⟳ Restart demo</button>
+      <button id="restartBtn" class="restart">⟳ Restart</button>
     </div>
   </header>
 
   <main>
     <div class="stage">
-      <div class="tag" id="stagetag">live physics · one robot learning to walk</div>
+      <div class="tag" id="stagetag">live physics</div>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
       <div class="pip">
-        <div class="plabel"><span class="d"></span>SPOTLIGHT · tracking one robot</div>
+        <div class="plabel"><span class="d"></span>tracking one robot</div>
         <iframe id="viserpip" referrerpolicy="no-referrer"></iframe>
       </div>
     </div>
@@ -309,17 +299,17 @@ function drawChart(cv, vals, opts){
   const padv=(hi-lo)*0.12; lo-=padv; hi+=padv;
   const X = i => pad.l + (vals.length===1?iw/2:iw*i/(vals.length-1));
   const Y = v => pad.t + ih*(1-(v-lo)/(hi-lo));
-  // gridlines + y labels
-  x.strokeStyle="#1b2420"; x.fillStyle="#5f6b63"; x.font="10px Segoe UI"; x.lineWidth=1;
-  for(let g=0; g<=3; g++){
-    const yy = pad.t + ih*g/3; const val = hi-(hi-lo)*g/3;
+  // faint gridlines + y labels
+  x.strokeStyle="#15181d"; x.fillStyle="#474d56"; x.font="10px -apple-system,Inter,sans-serif"; x.lineWidth=1;
+  for(let g=0; g<=2; g++){
+    const yy = pad.t + ih*g/2; const val = hi-(hi-lo)*g/2;
     x.beginPath(); x.moveTo(pad.l,yy); x.lineTo(w-pad.r,yy); x.stroke();
     x.fillText(val.toFixed(opts.dec||0), 4, yy+3);
   }
   // zero line
-  if(lo<0 && hi>0){ const z=Y(0); x.strokeStyle="#33403a"; x.setLineDash([4,4]);
+  if(lo<0 && hi>0){ const z=Y(0); x.strokeStyle="#262a31"; x.setLineDash([3,4]);
     x.beginPath(); x.moveTo(pad.l,z); x.lineTo(w-pad.r,z); x.stroke(); x.setLineDash([]); }
-  // area fill
+  // subtle area fill
   const grad = x.createLinearGradient(0,pad.t,0,pad.t+ih);
   grad.addColorStop(0, opts.fill); grad.addColorStop(1, "rgba(0,0,0,0)");
   x.beginPath(); x.moveTo(X(0),Y(vals[0]));
@@ -329,11 +319,10 @@ function drawChart(cv, vals, opts){
   // line
   x.beginPath(); x.moveTo(X(0),Y(vals[0]));
   for(let i=1;i<vals.length;i++) x.lineTo(X(i),Y(vals[i]));
-  x.strokeStyle=opts.color; x.lineWidth=2.4; x.lineJoin="round"; x.stroke();
+  x.strokeStyle=opts.color; x.lineWidth=1.8; x.lineJoin="round"; x.stroke();
   // head dot
   const lx=X(vals.length-1), ly=Y(vals[vals.length-1]);
-  x.beginPath(); x.arc(lx,ly,3.5,0,7); x.fillStyle=opts.color; x.fill();
-  x.beginPath(); x.arc(lx,ly,7,0,7); x.strokeStyle=opts.color; x.globalAlpha=.3; x.stroke(); x.globalAlpha=1;
+  x.beginPath(); x.arc(lx,ly,2.6,0,7); x.fillStyle=opts.color; x.fill();
 }
 
 async function tick(){
@@ -347,7 +336,7 @@ async function tick(){
   document.getElementById("maxiter").textContent = m.max_iter;
   document.getElementById("sps").textContent = (m.sps||0).toLocaleString();
   if(m.envs){ document.getElementById("stagetag").textContent =
-     "live physics · learning from "+m.envs.toLocaleString()+" robots in parallel"; }
+     m.envs.toLocaleString()+" robots · live physics"; }
   if(m.task){ document.getElementById("task").textContent =
      "Isaac Lab · rsl_rl PPO · "+m.task; }
 
@@ -369,11 +358,11 @@ async function tick(){
   document.getElementById("c_velerr").textContent = fmt(last.vel_err,3);
   // draw
   drawChart(document.getElementById("ch_reward"), reward,
-     {color:"#a4e400", fill:"rgba(118,185,0,.28)", dec:0});
+     {color:"#8ad94c", fill:"rgba(138,217,76,.12)", dec:0});
   drawChart(document.getElementById("ch_eplen"), eplen,
-     {color:"#76b900", fill:"rgba(118,185,0,.22)", lo:0, hi:1000, dec:0});
+     {color:"#8ad94c", fill:"rgba(138,217,76,.10)", lo:0, hi:1000, dec:0});
   drawChart(document.getElementById("ch_velerr"), velerr,
-     {color:"#00d0ff", fill:"rgba(0,208,255,.20)", lo:0, dec:2});
+     {color:"#5ec9e8", fill:"rgba(94,201,232,.10)", lo:0, dec:2});
 }
 // restart button: tells the server to kill the current run; the booth loop then
 // starts a fresh cycle from the checkpoint (~90s to reboot the simulator).
