@@ -8,7 +8,7 @@
 SEED_RUN="${1:-booth_seed}"
 CKPT="${2:-model_100.pt}"
 ENVS="${3:-2048}"
-VIS="${4:-64}"
+VIS="${4:-128}"
 HUGE=999900          # effectively never-ending; resets are in-place
 cd ~/rl-demo
 
