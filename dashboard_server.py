@@ -175,7 +175,7 @@ PAGE = r"""<!doctype html>
   .stage .tag{position:absolute;top:16px;left:18px;z-index:5;font-size:10.5px;letter-spacing:.8px;
     color:var(--dim);text-transform:uppercase;font-weight:500}
   .stage .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    flex-direction:column;gap:16px;background:#08090b;color:var(--dim);font-size:13px;z-index:4}
+    flex-direction:column;gap:16px;background:#08090b;color:var(--dim);font-size:13px;z-index:20}
   .spin{width:30px;height:30px;border:2px solid var(--line2);border-top-color:var(--acc);
     border-radius:50%;animation:s .9s linear infinite}
   @keyframes s{to{transform:rotate(360deg)}}
