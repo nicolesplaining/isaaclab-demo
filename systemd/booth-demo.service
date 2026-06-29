@@ -1,0 +1,19 @@
+[Unit]
+Description=DGX Spark RL Booth Demo (G1 live training + viser viewer + dashboard)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/sp9/rl-demo
+# booth_instant.sh is a foreground self-healing keepalive: it starts the dashboard
+# (:8800) + tensorboard (:6006) and keeps the long-lived G1 training+viser (:8080)
+# alive, warm-started from model_120 with in-place instant resets.
+ExecStart=/usr/bin/env bash /home/sp9/rl-demo/booth_instant.sh booth_seed model_110.pt 2048 48
+Restart=always
+RestartSec=10
+# Isaac Sim boot is slow and Type=simple is "ready" immediately, so no start timeout.
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target

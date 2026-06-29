@@ -11,5 +11,5 @@ for i in $(seq 1 15); do
 done
 sleep 3
 echo "[reset] survivors booth_g1=$(pgrep -fc booth_g1.sh) kit=$(pgrep -fc _isaac_sim/kit/python) $(date)"
-nohup bash ~/rl-demo/booth_g1.sh booth_seed model_100.pt 140 2048 16 >/tmp/boothg1.out 2>&1 & disown
+nohup bash ~/rl-demo/booth_g1.sh booth_seed model_110.pt 140 2048 16 >/tmp/boothg1.out 2>&1 & disown
 echo "[reset] launched one booth_g1 $(date)"

@@ -11,5 +11,5 @@ for i in $(seq 1 20); do
 done
 sleep 3
 echo "[force48] survivors: booth=$(pgrep -fc booth_instant.sh) kit=$(pgrep -fc _isaac_sim/kit/python)"
-nohup bash ~/rl-demo/booth_instant.sh booth_seed model_100.pt 2048 48 >/tmp/boothinstant.out 2>&1 & disown
+nohup bash ~/rl-demo/booth_instant.sh booth_seed model_110.pt 2048 48 >/tmp/boothinstant.out 2>&1 & disown
 echo "[force48] launched ONE @48 $(date)"

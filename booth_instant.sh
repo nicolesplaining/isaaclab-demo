@@ -6,7 +6,7 @@
 # keeps dashboard:8800 + tensorboard:6006 up.
 #   Args: SEED_RUN CHECKPOINT NUM_ENVS VIS
 SEED_RUN="${1:-booth_seed}"
-CKPT="${2:-model_100.pt}"
+CKPT="${2:-model_110.pt}"
 ENVS="${3:-2048}"
 VIS="${4:-48}"
 HUGE=999900          # effectively never-ending; resets are in-place

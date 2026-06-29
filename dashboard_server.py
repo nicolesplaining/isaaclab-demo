@@ -16,7 +16,7 @@ HOME = os.path.expanduser("~")
 DEFAULT_LOG = os.path.join(HOME, "rl-demo", "train_viz.log")
 START_EPOCH_FILE = os.path.join(HOME, "rl-demo", "train_start.epoch")
 DONE_FLAG = "/tmp/trainviz.done"
-CYCLE_TARGET = 140   # iterations per booth arc (display only)
+CYCLE_TARGET = 135   # iterations per booth arc (display only)
 
 FIELDS = {
     "iter":    re.compile(r"Learning iteration (\d+)/(\d+)"),
@@ -100,8 +100,16 @@ def parse_log(path):
     else:
         status = "idle"
 
+    # spotlight robot's (env 0) episode count, written by the training loop on resets
+    episode = 1
+    try:
+        episode = int(open("/dev/shm/spotlight_episode").read().strip())
+    except Exception:
+        pass
+
     return {"meta": {"status": status, "current_iter": cur_iter, "max_iter": max_iter,
-                     "elapsed": elapsed, "sps": cur_sps, "task": task, "envs": envs},
+                     "elapsed": elapsed, "sps": cur_sps, "task": task, "envs": envs,
+                     "episode": episode},
             "series": series}
 
 
@@ -186,13 +194,13 @@ PAGE = r"""<!doctype html>
   .spin{width:30px;height:30px;border:2px solid var(--line2);border-top-color:var(--acc);
     border-radius:50%;animation:s .9s linear infinite}
   @keyframes s{to{transform:rotate(360deg)}}
-  .right{display:grid;grid-template-rows:1fr 1fr 1fr;gap:18px;min-height:0}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  .right{display:grid;grid-template-rows:auto 1fr 1fr 1fr;gap:18px;min-height:0}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);
     border:1px solid var(--line);border-radius:14px;overflow:hidden}
-  .stat{background:var(--bg);padding:15px 18px}
-  .stat .k{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;font-weight:500}
-  .stat .v{font-size:29px;font-weight:600;margin-top:7px;letter-spacing:-1px}
-  .stat .v small{font-size:13px;color:var(--dim2);font-weight:500;letter-spacing:0}
+  .stat{background:var(--bg);padding:16px 20px}
+  .stat .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:600}
+  .stat .v{font-size:50px;font-weight:700;margin-top:4px;letter-spacing:-2px;color:var(--acc);line-height:1}
+  .stat .v small{font-size:18px;color:var(--dim2);font-weight:500;letter-spacing:0;margin-left:2px}
   .card{display:flex;flex-direction:column;min-height:0}
   .card .h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:3px}
   .card .h .t{font-size:10.5px;font-weight:500;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
@@ -231,10 +239,6 @@ PAGE = r"""<!doctype html>
 
   <main>
     <div class="stage">
-      <div class="iterbox">
-        <span class="k">iteration</span>
-        <span class="v"><b id="iter">0</b><span class="mx">/<span id="maxiter">140</span></span></span>
-      </div>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
@@ -245,6 +249,10 @@ PAGE = r"""<!doctype html>
     </div>
 
     <div class="right">
+      <div class="stats">
+        <div class="stat"><div class="k">iteration</div><div class="v"><span id="iter">0</span><small>/<span id="maxiter">135</span></small></div></div>
+        <div class="stat"><div class="k">episode</div><div class="v"><span id="episode">1</span></div></div>
+      </div>
       <div class="card">
         <div class="h"><div class="t">Mean reward <span class="arrow up">▲ higher = better</span></div></div>
         <canvas id="ch_reward"></canvas>
@@ -319,6 +327,10 @@ function drawChart(cv, vals, opts){
   x.beginPath(); x.arc(lx,ly,2.6,0,7); x.fillStyle=opts.color; x.fill();
 }
 
+// reset gating: from the moment Restart is clicked until a fresh arc begins,
+// keep the overlay up so the viewer never sees the stale high count nor a
+// mid-flight iteration — the run is revealed at iteration 1.
+let pendingReset = false, sawZero = true;
 async function tick(){
   let d;
   try{ d = await (await fetch("/api/metrics",{cache:"no-store"})).json(); }
@@ -328,11 +340,17 @@ async function tick(){
      m.status==="training"?"training live": m.status;
   document.getElementById("iter").textContent = m.current_iter;
   document.getElementById("maxiter").textContent = m.max_iter;
+  document.getElementById("episode").textContent = (m.episode||1);
   document.getElementById("sps").textContent = (m.sps||0).toLocaleString();
 
-  // viser overlay: hide once we have iterations (sim is running)
+  // viser overlay: keep it up through a reset (stale count -> warm-up -> iter 1)
   const over=document.getElementById("stageover");
-  over.style.display = (s.length>0) ? "none" : "flex";
+  if(pendingReset){
+    if(m.current_iter===0){ sawZero=true; }          // marker processed, arc cleared
+    if(sawZero && s.length>0){ pendingReset=false; }  // fresh arc has begun -> reveal
+  }
+  const showOver = (s.length===0) || (pendingReset && !sawZero);
+  over.style.display = showOver ? "flex" : "none";
 
   if(!s.length){ requestAnimationFrame(()=>{}); return; }
   const reward=s.map(p=>p.reward), eplen=s.map(p=>p.ep_len),
@@ -351,10 +369,12 @@ async function tick(){
 const rbtn = document.getElementById("restartBtn");
 rbtn.addEventListener("click", async () => {
   rbtn.disabled = true; const orig = rbtn.textContent; rbtn.textContent = "⟳ Reset!";
+  pendingReset = true; sawZero = false;
+  document.getElementById("stageover").style.display = "flex";
   try { await fetch("/api/restart"); } catch(e){}
   setTimeout(() => { rbtn.disabled = false; rbtn.textContent = orig; }, 2500);
 });
-setInterval(tick, 1500); tick();
+setInterval(tick, 450); tick();
 window.addEventListener("resize", tick);
 </script>
 </body></html>

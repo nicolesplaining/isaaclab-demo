@@ -3,7 +3,7 @@
 # Args: TASK LOAD_RUN CHECKPOINT EXTRA_ITERS NUM_ENVS VIS
 TASK="${1:-Isaac-Velocity-Flat-G1-v0}"
 LOAD_RUN="${2}"
-CKPT="${3:-model_100.pt}"
+CKPT="${3:-model_110.pt}"
 EXTRA="${4:-110}"              # iterations to train past the checkpoint (~3 min)
 ENVS="${5:-2048}"
 VIS="${6:-9}"
@@ -24,5 +24,5 @@ echo "[launcher] RESUME $TASK from $LOAD_RUN/$CKPT (iter $CKPT_ITER) -> $MAXIT, 
     --task=$TASK --viz viser --num_envs $ENVS --max_visible_envs $VIS --max_iterations $MAXIT \
     --resume --load_run "$LOAD_RUN" --checkpoint "$CKPT" \
     --kit_args=--/plugins/carb.tasking.plugin/threadCount=6 \
-    env.scene.env_spacing=1.0 >> "$LOG" 2>&1
+    env.scene.env_spacing=0.65 >> "$LOG" 2>&1
 echo "DONE exit=$? at $(date)" >> "$LOG"; echo DONE > /tmp/trainviz.done

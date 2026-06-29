@@ -11,4 +11,4 @@ for i in $(seq 1 15); do
 done
 sleep 3
 echo "[reset_instant] launching booth_instant VIS=$VIS $(date)"
-nohup bash ~/rl-demo/booth_instant.sh booth_seed model_100.pt 2048 "$VIS" >/tmp/boothinstant.out 2>&1 & disown
+nohup bash ~/rl-demo/booth_instant.sh booth_seed model_110.pt 2048 "$VIS" >/tmp/boothinstant.out 2>&1 & disown

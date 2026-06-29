@@ -4,7 +4,7 @@
 # Isaac Sim boot-hang). Leaves dashboard:8800 + tensorboard:6006 up across loops.
 #   Args: SEED_RUN CHECKPOINT EXTRA_ITERS NUM_ENVS VIS
 SEED_RUN="${1:-booth_seed}"
-CKPT="${2:-model_100.pt}"
+CKPT="${2:-model_110.pt}"
 EXTRA="${3:-140}"     # iterations past the checkpoint (~4 min at ~1.7s/iter)
 ENVS="${4:-2048}"
 VIS="${5:-9}"
