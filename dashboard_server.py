@@ -172,8 +172,15 @@ PAGE = r"""<!doctype html>
   main{flex:1;display:grid;grid-template-columns:1.5fr 1fr;gap:20px;padding:0 32px 20px;min-height:0}
   .stage{position:relative;background:#000;border:1px solid var(--line);border-radius:16px;overflow:hidden}
   .stage iframe{width:100%;height:100%;border:0;display:block}
-  .stage .tag{position:absolute;top:16px;left:18px;z-index:5;font-size:10.5px;letter-spacing:.8px;
+  .stage .tag{position:absolute;bottom:18px;left:20px;z-index:5;font-size:10.5px;letter-spacing:.8px;
     color:var(--dim);text-transform:uppercase;font-weight:500}
+  .iterbox{position:absolute;top:20px;left:22px;z-index:5;display:flex;flex-direction:column;
+    pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.85)}
+  .iterbox .k{font-size:11px;text-transform:uppercase;letter-spacing:3px;color:var(--dim);
+    font-weight:600;margin-bottom:3px}
+  .iterbox .v{display:flex;align-items:baseline;line-height:.9}
+  .iterbox .v b{font-size:76px;font-weight:700;letter-spacing:-3px;color:var(--acc)}
+  .iterbox .v .mx{font-size:26px;font-weight:500;color:var(--dim);letter-spacing:0;margin-left:4px}
   .stage .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     flex-direction:column;gap:16px;background:#08090b;color:var(--dim);font-size:13px;z-index:20}
   .spin{width:30px;height:30px;border:2px solid var(--line2);border-top-color:var(--acc);
@@ -216,8 +223,7 @@ PAGE = r"""<!doctype html>
     <div class="live">
       <div class="pill"><span class="blink"></span><span id="status">warming up</span></div>
       <div class="clock">
-        <div>iteration <b id="iter">0</b> / <span id="maxiter">0</span></div>
-        <div><span id="sps">0</span> steps/s</div>
+        <div><b id="sps">0</b> steps/s</div>
       </div>
       <button id="restartBtn" class="restart">⟳ Restart</button>
     </div>
@@ -226,6 +232,10 @@ PAGE = r"""<!doctype html>
   <main>
     <div class="stage">
       <div class="tag" id="stagetag">live physics</div>
+      <div class="iterbox">
+        <span class="k">iteration</span>
+        <span class="v"><b id="iter">0</b><span class="mx">/<span id="maxiter">140</span></span></span>
+      </div>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
