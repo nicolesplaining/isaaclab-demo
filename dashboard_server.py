@@ -16,7 +16,7 @@ HOME = os.path.expanduser("~")
 DEFAULT_LOG = os.path.join(HOME, "rl-demo", "train_viz.log")
 START_EPOCH_FILE = os.path.join(HOME, "rl-demo", "train_start.epoch")
 DONE_FLAG = "/tmp/trainviz.done"
-CYCLE_TARGET = 140   # iterations per booth arc (display only)
+CYCLE_TARGET = 160   # iterations per booth arc (display only)
 
 FIELDS = {
     "iter":    re.compile(r"Learning iteration (\d+)/(\d+)"),
@@ -233,7 +233,7 @@ PAGE = r"""<!doctype html>
     <div class="stage">
       <div class="iterbox">
         <span class="k">iteration</span>
-        <span class="v"><b id="iter">0</b><span class="mx">/<span id="maxiter">140</span></span></span>
+        <span class="v"><b id="iter">0</b><span class="mx">/<span id="maxiter">160</span></span></span>
       </div>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
