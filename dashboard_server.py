@@ -231,7 +231,6 @@ PAGE = r"""<!doctype html>
 
   <main>
     <div class="stage">
-      <div class="tag" id="stagetag">live physics</div>
       <div class="iterbox">
         <span class="k">iteration</span>
         <span class="v"><b id="iter">0</b><span class="mx">/<span id="maxiter">140</span></span></span>
@@ -240,7 +239,7 @@ PAGE = r"""<!doctype html>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
       <div class="pip">
-        <div class="plabel"><span class="d"></span>tracking one robot</div>
+        <div class="plabel"><span class="d"></span>Spotlight view</div>
         <iframe id="viserpip" referrerpolicy="no-referrer"></iframe>
       </div>
     </div>
@@ -268,11 +267,6 @@ PAGE = r"""<!doctype html>
       </div>
     </div>
   </main>
-
-  <footer>
-    <div id="task">Isaac Lab · rsl_rl PPO · Unitree Go2 velocity tracking</div>
-    <div>NVIDIA DGX Spark · Isaac Sim 6.0 + Isaac Lab · GPU PhysX</div>
-  </footer>
 </div>
 
 <script>
@@ -343,10 +337,6 @@ async function tick(){
   document.getElementById("iter").textContent = m.current_iter;
   document.getElementById("maxiter").textContent = m.max_iter;
   document.getElementById("sps").textContent = (m.sps||0).toLocaleString();
-  if(m.envs){ document.getElementById("stagetag").textContent =
-     m.envs.toLocaleString()+" robots · live physics"; }
-  if(m.task){ document.getElementById("task").textContent =
-     "Isaac Lab · rsl_rl PPO · "+m.task; }
 
   // viser overlay: hide once we have iterations (sim is running)
   const over=document.getElementById("stageover");
