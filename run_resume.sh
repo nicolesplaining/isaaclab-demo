@@ -11,7 +11,7 @@ cd ~/rl-demo/IsaacLab
 export TERM=xterm
 export LD_PRELOAD="$LD_PRELOAD:/lib/aarch64-linux-gnu/libgomp.so.1"
 export PYTHONUNBUFFERED=1
-export PXR_WORK_THREAD_LIMIT=6 OPENBLAS_NUM_THREADS=6 OMP_NUM_THREADS=6
+export PXR_WORK_THREAD_LIMIT=16 OPENBLAS_NUM_THREADS=16 OMP_NUM_THREADS=16
 # checkpoint iter number -> max_iterations = ckpt_iter + EXTRA
 CKPT_ITER=$(echo "$CKPT" | grep -oE "[0-9]+")
 MAXIT=$(( CKPT_ITER + EXTRA ))
