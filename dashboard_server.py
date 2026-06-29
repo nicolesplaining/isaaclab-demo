@@ -16,7 +16,7 @@ HOME = os.path.expanduser("~")
 DEFAULT_LOG = os.path.join(HOME, "rl-demo", "train_viz.log")
 START_EPOCH_FILE = os.path.join(HOME, "rl-demo", "train_start.epoch")
 DONE_FLAG = "/tmp/trainviz.done"
-CYCLE_TARGET = 130   # iterations per booth arc (display only)
+CYCLE_TARGET = 140   # iterations per booth arc (display only)
 
 FIELDS = {
     "iter":    re.compile(r"Learning iteration (\d+)/(\d+)"),
@@ -186,7 +186,7 @@ PAGE = r"""<!doctype html>
   .spin{width:30px;height:30px;border:2px solid var(--line2);border-top-color:var(--acc);
     border-radius:50%;animation:s .9s linear infinite}
   @keyframes s{to{transform:rotate(360deg)}}
-  .right{display:grid;grid-template-rows:auto 1fr 1fr 1fr;gap:16px;min-height:0}
+  .right{display:grid;grid-template-rows:1fr 1fr 1fr;gap:18px;min-height:0}
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
     border:1px solid var(--line);border-radius:14px;overflow:hidden}
   .stat{background:var(--bg);padding:15px 18px}
@@ -233,7 +233,7 @@ PAGE = r"""<!doctype html>
     <div class="stage">
       <div class="iterbox">
         <span class="k">iteration</span>
-        <span class="v"><b id="iter">0</b><span class="mx">/<span id="maxiter">130</span></span></span>
+        <span class="v"><b id="iter">0</b><span class="mx">/<span id="maxiter">140</span></span></span>
       </div>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
@@ -245,24 +245,16 @@ PAGE = r"""<!doctype html>
     </div>
 
     <div class="right">
-      <div class="stats">
-        <div class="stat"><div class="k">Reward</div><div class="v" id="s_reward">–</div></div>
-        <div class="stat"><div class="k">Stays upright</div><div class="v" id="s_eplen">–<small>/1000</small></div></div>
-        <div class="stat"><div class="k">Tracking error</div><div class="v" id="s_velerr">–</div></div>
-      </div>
       <div class="card">
-        <div class="h"><div class="t">Mean reward <span class="arrow up">▲ higher = better</span></div>
-          <div class="cur up" id="c_reward">–</div></div>
+        <div class="h"><div class="t">Mean reward <span class="arrow up">▲ higher = better</span></div></div>
         <canvas id="ch_reward"></canvas>
       </div>
       <div class="card">
-        <div class="h"><div class="t">Episode length <span class="arrow up">▲ stays standing longer</span></div>
-          <div class="cur up" id="c_eplen">–</div></div>
+        <div class="h"><div class="t">Episode length <span class="arrow up">▲ stays standing longer</span></div></div>
         <canvas id="ch_eplen"></canvas>
       </div>
       <div class="card">
-        <div class="h"><div class="t">Velocity tracking error <span class="arrow down">▼ lower = better</span></div>
-          <div class="cur down" id="c_velerr">–</div></div>
+        <div class="h"><div class="t">Velocity tracking error <span class="arrow down">▼ lower = better</span></div></div>
         <canvas id="ch_velerr"></canvas>
       </div>
     </div>
@@ -346,14 +338,6 @@ async function tick(){
   const reward=s.map(p=>p.reward), eplen=s.map(p=>p.ep_len),
         velerr=s.map(p=>p.vel_err).filter(v=>v!==null);
   const last=s[s.length-1];
-  // stat tiles
-  document.getElementById("s_reward").textContent = fmt(last.reward,1);
-  document.getElementById("s_eplen").innerHTML = Math.round(last.ep_len)+'<small>/1000</small>';
-  document.getElementById("s_velerr").textContent = fmt(last.vel_err,2);
-  // chart current labels
-  document.getElementById("c_reward").textContent = fmt(last.reward,2);
-  document.getElementById("c_eplen").textContent = Math.round(last.ep_len);
-  document.getElementById("c_velerr").textContent = fmt(last.vel_err,3);
   // draw
   drawChart(document.getElementById("ch_reward"), reward,
      {color:"#8ad94c", fill:"rgba(138,217,76,.12)", dec:0});
