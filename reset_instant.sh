@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Kill all booth loops + training, then launch one booth_instant with given VIS.
-VIS="${1:-80}"
+VIS="${1:-48}"
 for i in $(seq 1 15); do
   pkill -9 -f booth_instant.sh 2>/dev/null
   pkill -9 -f booth_g1.sh 2>/dev/null

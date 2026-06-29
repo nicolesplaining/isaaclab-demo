@@ -229,6 +229,10 @@ PAGE = r"""<!doctype html>
       <iframe id="viser" referrerpolicy="no-referrer"></iframe>
       <div class="overlay" id="stageover"><div class="spin"></div>
         <div>Starting the simulation…</div></div>
+      <div class="pip">
+        <div class="plabel"><span class="d"></span>tracking one robot</div>
+        <iframe id="viserpip" referrerpolicy="no-referrer"></iframe>
+      </div>
     </div>
 
     <div class="right">
@@ -265,9 +269,11 @@ PAGE = r"""<!doctype html>
 const host = location.hostname || "localhost";
 const viser = document.getElementById("viser");
 let viserUp = false;
+const viserpip = document.getElementById("viserpip");
 function tryViser(){
-  // single viser view; the follow-camera tracks the hero robot with the crowd around it
+  // main view (static crowd) + spotlight inset (tracks the hero); both point at viser
   viser.src = "http://"+host+":8080/";
+  viserpip.src = "http://"+host+":8080/";
 }
 tryViser();
 
