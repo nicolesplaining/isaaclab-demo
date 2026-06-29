@@ -2,6 +2,7 @@
 Description=DGX Spark RL Booth Demo (G1 live training + viser viewer + dashboard)
 After=network-online.target
 Wants=network-online.target
+Conflicts=diffusion-demo.service
 
 [Service]
 Type=simple
